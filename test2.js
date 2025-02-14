@@ -1,4 +1,12 @@
 frappe.pages["project-action-panel"].on_page_load = function (wrapper) {
+
+	// 124 start	
+	let project_filter;
+	let customer_filter;
+	//globally declare datatable to use in filters to refresh and data table. before, it was using locally 
+	let datatable ;
+// 124 end
+
 	// Ensure wrapper is defined
 	if (!wrapper) {
 		return;
@@ -648,9 +656,6 @@ frappe.pages["project-action-panel"].on_page_load = function (wrapper) {
 		});
 	}
 
-	// 124 start
-	var datatable =null;
-	// 124 end
 
 	// Function to render DataTable with tabs
 function renderDataTable(wrapper, projectData) {
@@ -684,68 +689,77 @@ function renderDataTable(wrapper, projectData) {
 	
 				<div id="content-wrapper" style="margin-top: 20px; margin-left: 30px;">
 					<div id="card-wrapper"></div>
-					// 124 start
+					<!-- '124 start -->
 					<div id="custom-filters" style="margin: 20px 0;display: flex;gap: 10px;"></div>
-					// 124 end
+					<!-- 124 end -->
 
 					<div id="datatable-wrapper"></div>
 				</div>
 			`;
-// 124 start
 
-			frappe.db.get_list("Project", { fields: ["name", "project_name"] }).then((res) => {
-				var $MultiSelectDiv = $('<div></div>');
-				$('#custom-filters').empty().append($MultiSelectDiv);
-				const optionsString = res.map(doc => `${doc.name} (${doc.project_name})`).join("\n");
+		// 124 start
+		frappe.db.get_list("Project", { fields: ["name", "project_name"] }).then((res) => {
+			var $MultiSelectDiv = $('<div></div>');
+			$('#custom-filters').empty().append($MultiSelectDiv);
 
-				project_filter = frappe.ui.form.make_control({
-					parent: $MultiSelectDiv,
-					df: {
-						label: "Project",
-						fieldname: "user_filter",
-						fieldtype: "MultiSelect",
-						options: optionsString,
-						// In your change callback for the MultiSelect:
-change: (e) => {
-  let selectedProjects = project_filter.value
-    .split(",")
-    .map(item => item.split("(")[0].trim())
-    .filter(Boolean);
-  console.log("Selected Projects:", selectedProjects);
+			const optionsString = res.map(doc => `${doc.name} (${doc.project_name})`).join("\n");
 
-  frappe.call({
-    method: "phamos.phamos.page.project_action_panel.project_action_panel.fetch_all_projects",
-    callback: function (r) {
-      let data = r.message;
-      if (selectedProjects.length) {
-        data = data.filter(project => selectedProjects.includes(project.name));
-      }
-      console.log("Filtered Data:", data);
-      datatable.refresh(data);
-    }
-  });
-}
+			project_filter = frappe.ui.form.make_control({
+				parent: $MultiSelectDiv,
+				df: {
+					label: "Project",
+					fieldname: "project_filter",
+					fieldtype: "MultiSelect",
+					options: optionsString,
+					change: (e) => {
+						applyFilter();
+					}
+				},
+				render_input: true,
+			});
 
-					},
-					render_input: true,
-				});
-				
-			
-			 
-			frappe.ui.form.make_control({
+			customer_filter = frappe.ui.form.make_control({
 				parent: $("#custom-filters"),
 				df: {
 					label: "Customer",
-					fieldname: "_fields",
+					fieldname: "customer",
 					fieldtype: "Link",
 					options: "Customer",
 					columns: 3,
+					change: (e) => {
+						applyFilter();
+					}
 				},
 				render_input: true,
-			 });
 			});
+		});
 
-			// 124 end
+		function applyFilter() {
+			let selectedProjects = (project_filter.value || "").split(",")
+				.map(item => item.split("(")[0].trim())
+				.filter(Boolean);
+
+			let selectedCustomer = customer_filter.value; // Use the correct reference
+
+			frappe.call({
+				method: "phamos.phamos.page.project_action_panel.project_action_panel.fetch_all_projects",
+				callback: function (r) {
+					let data = r.message || [];
+
+					if (selectedCustomer) {
+						data = data.filter(customer => customer.customer === selectedCustomer);
+					}
+
+					if (selectedProjects.length) {
+						data = data.filter(project => selectedProjects.includes(project.name));
+					}
+
+					console.log("Filtered Data:", data);
+					datatable.refresh(data);
+				}
+			});
+		}
+		// 124 end
 
 // Add CSS for the hover-over box
 		const tooltipStyle = document.createElement("style");
