@@ -327,6 +327,7 @@ frappe.pages["project-action-panel"].on_page_load = function (wrapper) {
                     const diffInHours = actualHours - expectedHours;
 
                     frappe.db.get_single_value("phamos Settings", "allowed_additional_work_time").then((value) => {
+                      console.log(value)
                       if(value) {
                         allowed_additional_work_time_mins = value
                         allowed_additional_work_time_hrs = allowed_additional_work_time_mins/60
@@ -671,6 +672,12 @@ function renderDataTable(wrapper, projectData) {
         <div class="form-tabs-list">
           <ul class="nav form-tabs" id="form-tabs" role="tablist">
             <li class="nav-item show">
+              <!-- 'Recent Projects' tab is the default active tab -->
+              <a class="nav-link" id="DAP-recent-project-tab" role="tab" aria-controls="recent-projects" aria-selected="false">
+                  Recent Projects
+              </a>
+            </li>
+            <li class="nav-item show">
               <!-- 'Your Projects' tab is the default active tab -->
               <a class="nav-link active" id="DAP-your-project-tab" role="tab" aria-controls="your-projects" aria-selected="true">
                   Your Projects
@@ -683,12 +690,45 @@ function renderDataTable(wrapper, projectData) {
               </a>
             </li>
           </ul>
+
+          <!-- 79 -->
+          <!-- Dropdown Popup (now placed directly below the tab) -->
+            <div id="dropdown-popup" class="dropdown-popup">
+              <label for="date-filter" class="form-label fw-bold">Filter: </label>
+              <select id="date-filter" class="form-select mb-2">
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+                <option value="custom">Custom Date</option>
+              </select>
+
+              <!-- Custom Date Range Fields (Side-by-side in one line) -->
+              <div id="custom-date-range" class="custom-date-range" style="display:none;">
+                  <div>
+                    <label for="from-date" class="form-label fw-bold">From:</label>
+                    <input type="date" id="from-date" class="form-control mb-2">
+                  </div>
+                  <div>
+                    <label for="to-date" class="form-label fw-bold">To:</label>
+                    <input type="date" id="to-date" class="form-control mb-2">
+                  </div>
+              </div>
+
+              <!-- Apply and Reset buttons -->
+              <div class="mt-2">
+                <button id="apply-btn" class="btn btn-primary" style="font-size: x-small;">Apply</button>
+                <button id="reset-btn" class="btn btn-secondary" style="background: lightgrey;font-size: x-small;">Reset</button>
+              </div>
+            </div>
+
         </div>
         <div id="content-wrapper" style="margin-top: 20px; margin-left: 30px;">
+
           <div id="card-wrapper"></div>
+
           <!-- '124 start -->
 					<div id="custom-filters" style="margin: 20px 0;display: flex;gap: 10px;"></div>
 					<!-- 124 end -->
+
           <div id="datatable-wrapper"></div>
         </div>
       `;
@@ -785,6 +825,31 @@ function renderDataTable(wrapper, projectData) {
     `;
     document.head.appendChild(tooltipStyle);
 
+    //79
+    const dropDownStyle = document.createElement("style");
+    dropDownStyle.innerHTML = `
+      .dropdown-popup {
+        display: none;
+        background: white;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        margin-top: 5px; /* Added spacing between tab and dropdown */
+        width: 100%;
+        max-width: 250px;
+      }
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `;
+    document.head.appendChild(dropDownStyle);
+    
+
     // Add the info icon with hover functionality
     const infoIcon = document.createElement("span");
     infoIcon.id = "info-icon";
@@ -799,16 +864,22 @@ function renderDataTable(wrapper, projectData) {
     // Get references to the tabs
     const your_projectsTab = document.getElementById("DAP-your-project-tab");
     const all_projectsTab = document.getElementById("DAP-all-project-tab");
+    //79
+    const recent_projectsTab = document.getElementById("DAP-recent-project-tab");
 
     // Event listener for the Your Projects tab
     your_projectsTab.addEventListener("click", () => {
       // Remove 'active' class from All Projects tab and set to Your Projects
       all_projectsTab.classList.remove("active");
       your_projectsTab.classList.add("active");
+      //79
+      recent_projectsTab.classList.remove("active");
 
       // Set visual feedback for selection
       your_projectsTab.setAttribute("aria-selected", "true");
       all_projectsTab.setAttribute("aria-selected", "false");
+      //79
+      recent_projectsTab.setAttribute("aria-selected", "false");
 
     // Show content for the Your Projects tab
       show_tab("Your Projects", projectData);
@@ -819,13 +890,99 @@ function renderDataTable(wrapper, projectData) {
         // Remove 'active' class from Your Projects tab and set to All Projects
         your_projectsTab.classList.remove("active");
         all_projectsTab.classList.add("active");
+        //79
+        recent_projectsTab.classList.remove("active");
 
         // Set visual feedback for selection
         all_projectsTab.setAttribute("aria-selected", "true");
         your_projectsTab.setAttribute("aria-selected", "false");
+        //79
+        recent_projectsTab.setAttribute("aria-selected", "false");
 
         // Show content for the All Projects tab
       show_tab("All Projects", projectData);
+    });
+
+    //79
+    // Event listener for the All Projects tab
+    recent_projectsTab.addEventListener("click", (e) => {
+      // Remove 'active' class from Your Projects tab and set to All Projects
+      recent_projectsTab.classList.add("active");
+      all_projectsTab.classList.remove("active");
+      your_projectsTab.classList.remove("active");
+
+      // Set visual feedback for selection
+      recent_projectsTab.setAttribute("aria-selected", "true");
+      your_projectsTab.setAttribute("aria-selected", "false");
+      all_projectsTab.setAttribute("aria-selected", "false");
+
+      // Show content for the All Projects tab
+      show_tab("Recent Projects", projectData);
+    
+      // Toggle dropdown
+      $("#dropdown-popup").slideToggle(200).addClass("fade-in"); 
+
+      // Hide the apply button
+      $("#apply-btn").fadeOut(200);
+       
+
+      //catch date filter
+      // $("#date-filter").off("change").on("change", function (e) {
+      //   e.preventDefault();
+      //   $("#dropdown-popup").slideUp(200); // Hide dropdown after selection
+      //   show_tab("Recent Projects", projectData)
+      // });
+
+      // Close dropdown if user clicks outside
+      $(document).off("click").on("click", function (event) {
+        if (!$(event.target).closest("#DAP-recent-project-tab, #dropdown-popup").length) {
+          $("#dropdown-popup").slideUp(200);
+        }
+      });
+
+
+      // Show or hide custom date range based on selected filter
+      $("#date-filter").off("change").on("change", function (e) {
+        if ($(this).val() === "custom") {
+            $("#custom-date-range").fadeIn(200); // Fade in custom date range
+            $("#apply-btn").fadeIn(200); // Show the apply button
+        } else {
+            $("#custom-date-range").fadeOut(200); // Fade out custom date range
+            $("#apply-btn").fadeOut(200); // Hide the apply button
+            $("#dropdown-popup").slideUp(200);
+
+            
+            show_tab("Recent Projects", projectData)
+          }
+      });
+
+      // Apply custom date filter
+      $("#apply-btn").off('click').on('click', function () {
+          let fromDate = $("#from-date").val();
+          let toDate = $("#to-date").val();
+          if (fromDate && toDate) {
+              console.log("Applied filter from " + fromDate + " to " + toDate);
+              // Here you can handle the filter logic and pass the selected dates to the backend or use them in your app
+              show_tab("Recent Projects", projectData)
+          } else {
+              alert("Please select both From and To dates.");
+          }
+      });
+
+      // Reset filter to "All" and clear dates
+      $("#reset-btn").off('click').on('click', function () {
+          $("#date-filter").val("7");
+          $("#from-date").val("");
+          $("#to-date").val("");
+          $("#custom-date-range").fadeOut(200); // Fade out custom date range on reset
+          $("#apply-btn").fadeOut(200); // Hide apply button on reset
+
+          $("#dropdown-popup").slideUp(200);
+          show_tab("Recent Projects", projectData)
+      });
+
+      
+
     });
 
   // Initial tab content setup: Show content for 'Your Projects' by default
@@ -840,7 +997,8 @@ function show_tab(tab, projectData) {
     cardWrapper.innerHTML = "";  // This will ensure the number cards don't duplicate
     datatableWrapper.innerHTML = ""; // Clear previous DataTable content
 
-    if (tab === "Your Projects") {
+    //79 validate Recent Projects
+    if (tab === "Your Projects" || tab === "Recent Projects") {
     // Logic to hide the specific column when "Your Projects" tab is active
   
       let style = document.createElement("style");
@@ -861,6 +1019,14 @@ function show_tab(tab, projectData) {
       card_names = ["Your Total Projects", "Total Hrs Worked Today", "Total Hrs Worked This Week", "Total Hrs Worked This Month"];
       render_cards(cardWrapper, card_names); // Call the render_cards function here
 
+      //79 filter recent project
+      if(tab === "Recent Projects"){
+        //filter project here
+        let selectedValue = $("#date-filter").val();
+        
+        console.log("selected value:", selectedValue);
+        console.log("projectData", projectData)
+      }
       // Render the DataTable for Your Projects
       renderProjectDataTable(datatableWrapper, projectData); // Render the actual DataTable
     } 
