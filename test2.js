@@ -1,678 +1,678 @@
 frappe.pages["project-action-panel"].on_page_load = function (wrapper) {
   // Ensure wrapper is defined
   if (!wrapper) {
-    return;
+      return;
   }
 
   // Set the title of the page
   if (wrapper.page) {
-    wrapper.page.set_title(
-      '<span style="font-size: 14px;">Project Action Panel</span>'
-    );
+      wrapper.page.set_title(
+          '<span style="font-size: 14px;">Project Action Panel</span>'
+      );
   }
-
-  // 124 start	
-	let project_filter;
-	let customer_filter;
-	//globally declare datatable to use in filters to refresh and data table. before, it was using locally 
-	let datatable ;
-	// 124 end
 
   function render_datatable() {
-    frappe.call({
-      method:
-        "phamos.phamos.page.project_action_panel.project_action_panel.fetch_projects",
-      callback: function (r) {
-        if (r.message) {
-          // Render DataTable with the fetched data
-          renderDataTable(wrapper, r.message);
-          //console.log(window.location.href)
-        } else {
-          // Handle error or empty data
-        }
-      },
-    });
+      frappe.call({
+          method:
+              "phamos.phamos.page.project_action_panel.project_action_panel.fetch_projects",
+          callback: function (r) {
+              if (r.message) {
+                  // Render DataTable with the fetched data
+                  renderDataTable(wrapper, r.message);
+                  //console.log(window.location.href)
+              } else {
+                  // Handle error or empty data
+              }
+          },
+      });
   }
- 
+
   // Fetch project data from the server on page load
   render_datatable();
 
   // Function to create timesheet record
   function create_timesheet_record(
-    project_name,
-    task,
-    customer,
-    from_time,
-    expected_time,
-    goal
+      project_name,
+      task,
+      customer,
+      from_time,
+      expected_time,
+      goal
   ) {
-    frappe.call({
-      method:
-        "phamos.phamos.page.project_action_panel.project_action_panel.create_timesheet_record",
-      args: {
-        project_name: project_name,
-        task:task,
-        customer: customer,
-        from_time: from_time,
-        expected_time: expected_time,
-        goal: goal,
-      },
-      freeze: true,
-      freeze_message: __("Creating Timesheet Record......"),
-      callback: function (r) {
-        if (r.message) {
-          let doc = frappe.model.sync(r.message);
-          frappe.msgprint(
-            "Timesheet Record: " + doc[0].name + " Created Successfully."
-          );
-          render_datatable();
-        }
-      },
-    });
+      frappe.call({
+          method:
+              "phamos.phamos.page.project_action_panel.project_action_panel.create_timesheet_record",
+          args: {
+              project_name: project_name,
+              task: task,
+              customer: customer,
+              from_time: from_time,
+              expected_time: expected_time,
+              goal: goal,
+          },
+          freeze: true,
+          freeze_message: __("Creating Timesheet Record......"),
+          callback: function (r) {
+              if (r.message) {
+                  let doc = frappe.model.sync(r.message);
+                  frappe.msgprint(
+                      "Timesheet Record: " + doc[0].name + " Created Successfully."
+                  );
+                  render_datatable();
+              }
+          },
+      });
   }
 
   // Function to create timesheet record
   function update_and_submit_timesheet_record(
-    timesheet_record,
-    task,
-    to_time,
-    percent_billable,
-    activity_type,
-    result
+      timesheet_record,
+      task,
+      to_time,
+      percent_billable,
+      activity_type,
+      result
   ) {
-    frappe.call({
-      method: 
-        "phamos.phamos.page.project_action_panel.project_action_panel.update_and_submit_timesheet_record",
-      args: {
-        name: timesheet_record,
-        task:task,
-        to_time: to_time,
-        percent_billable: percent_billable,
-        activity_type: activity_type,
-        result: result,
-      },
-      freeze: true,
-      freeze_message: __("Updating Timesheet Record......"),
-      callback: function (r) {
-        if (r.message) {
-          let doc = frappe.model.sync(r.message);
-          frappe.msgprint(
-            "Timesheet Record: " + doc[0].name + " Updated Successfully."
-          );
-          render_datatable();
-        }
-      },
-    });
+      frappe.call({
+          method:
+              "phamos.phamos.page.project_action_panel.project_action_panel.update_and_submit_timesheet_record",
+          args: {
+              name: timesheet_record,
+              task: task,
+              to_time: to_time,
+              percent_billable: percent_billable,
+              activity_type: activity_type,
+              result: result,
+          },
+          freeze: true,
+          freeze_message: __("Updating Timesheet Record......"),
+          callback: function (r) {
+              if (r.message) {
+                  let doc = frappe.model.sync(r.message);
+                  frappe.msgprint(
+                      "Timesheet Record: " + doc[0].name + " Updated Successfully."
+                  );
+                  render_datatable();
+              }
+          },
+      });
   }
 
 
   window.toggleDropdown = function (event, dropdownId) {
-    event.stopPropagation(); // Prevent clicks from propagating to the document
-  
-    const dropdown = document.getElementById(dropdownId);
-    if (!dropdown) {
-      console.error(`Dropdown with ID ${dropdownId} not found`); // Debugging log
-      return;
-    }
-  
-    // Close other open dropdowns
-    document.querySelectorAll('.dropdown-menu').forEach((menu) => {
-      if (menu !== dropdown) {
-        menu.style.display = 'none';
+      event.stopPropagation(); // Prevent clicks from propagating to the document
+
+      const dropdown = document.getElementById(dropdownId);
+      if (!dropdown) {
+          console.error(`Dropdown with ID ${dropdownId} not found`); // Debugging log
+          return;
       }
-    });
-  
-    // Toggle visibility of the clicked dropdown
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+
+      // Close other open dropdowns
+      document.querySelectorAll('.dropdown-menu').forEach((menu) => {
+          if (menu !== dropdown) {
+              menu.style.display = 'none';
+          }
+      });
+
+      // Toggle visibility of the clicked dropdown
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   };
 
 
   // Close dropdowns when clicking outside
   document.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown-menu').forEach((menu) => {
-      menu.style.display = 'none';
-    });
+      document.querySelectorAll('.dropdown-menu').forEach((menu) => {
+          menu.style.display = 'none';
+      });
   });
-  
+
 
   window.handleCustomerClick = function (customer_name) {
-    // Get the base URL of the current page
-    let baseUrl = window.location.href.split("/").slice(0, 3).join("/"); // Extract protocol, hostname, and port
+      // Get the base URL of the current page
+      let baseUrl = window.location.href.split("/").slice(0, 3).join("/"); // Extract protocol, hostname, and port
 
-    // Construct the URL for the customer details page
-    let url = `${baseUrl}/app/customer/${encodeURIComponent(customer_name)}`;
+      // Construct the URL for the customer details page
+      let url = `${baseUrl}/app/customer/${encodeURIComponent(customer_name)}`;
 
-    // Open the URL in a new window
-    window.open(url);
+      // Open the URL in a new window
+      window.open(url);
 
-    // Optionally, return false to prevent the default link behavior (not necessary in this case)
-    return false;
+      // Optionally, return false to prevent the default link behavior (not necessary in this case)
+      return false;
   };
 
 
   window.handleProjectClick = function (project_name) {
-    // Get the base URL of the current page
-    let baseUrl = window.location.href.split("/").slice(0, 3).join("/"); // Extract protocol, hostname, and port
+      // Get the base URL of the current page
+      let baseUrl = window.location.href.split("/").slice(0, 3).join("/"); // Extract protocol, hostname, and port
 
-    // Construct the URL for the project details page
-    let url = `${baseUrl}/app/project/${encodeURIComponent(project_name)}`;
+      // Construct the URL for the project details page
+      let url = `${baseUrl}/app/project/${encodeURIComponent(project_name)}`;
 
-    // Open the URL in a new window
-    window.open(url);
+      // Open the URL in a new window
+      window.open(url);
 
-    // Optionally, return false to prevent the default link behavior (not necessary in this case)
-    return false;
+      // Optionally, return false to prevent the default link behavior (not necessary in this case)
+      return false;
   };
 
 
   window.handleTimesheetClick = function (timesheet) {
-    // Get the base URL of the current page
-    let baseUrl = window.location.href.split("/").slice(0, 3).join("/"); // Extract protocol, hostname, and port
+      // Get the base URL of the current page
+      let baseUrl = window.location.href.split("/").slice(0, 3).join("/"); // Extract protocol, hostname, and port
 
-    // Construct the URL for the customer details page
-    let url = `${baseUrl}/app/timesheet-record/${encodeURIComponent(
-      timesheet
-    )}`;
+      // Construct the URL for the customer details page
+      let url = `${baseUrl}/app/timesheet-record/${encodeURIComponent(
+          timesheet
+      )}`;
 
-    // Open the URL in a new window
-    window.open(url);
+      // Open the URL in a new window
+      window.open(url);
 
-    // Optionally, return false to prevent the default link behavior (not necessary in this case)
-    return false;
+      // Optionally, return false to prevent the default link behavior (not necessary in this case)
+      return false;
   };
 
 
-  window.stopProject = function (timesheet_record, percent_billable,project,task,task_in_timesheet_record) {
-    let activity_type = "";
-    let from_time='';
-    let expected_time=''
-    let timesheet_record_info = " Info from timesheet record";
-    frappe.db.get_value(
-      "Timesheet Record",
-      { name: timesheet_record },
-      ["goal", "from_time","expected_time"],
-      function (value) {
-        // Your code here
-        from_time = value.from_time
-        expected_time = value.expected_time
-        from_time_formatted = frappe.datetime.str_to_user(value.from_time);
-        timesheet_record_info =
-          "From time: " + `${from_time_formatted} ` + ",<br>Expected Time : "+ `${(value.expected_time / 3600).toFixed(2)}`+ "hrs" + ",<br>Goal is: " + value.goal;
-         
-        frappe.db.get_value(
-          "Employee",
-          { user_id: frappe.session.user },
-          "activity_type",
+  window.stopProject = function (timesheet_record, percent_billable, project, task, task_in_timesheet_record) {
+      let activity_type = "";
+      let from_time = '';
+      let expected_time = ''
+      let timesheet_record_info = " Info from timesheet record";
+      frappe.db.get_value(
+          "Timesheet Record",
+          { name: timesheet_record },
+          ["goal", "from_time", "expected_time"],
           function (value) {
+              // Your code here
+              from_time = value.from_time
+              expected_time = value.expected_time
+              from_time_formatted = frappe.datetime.str_to_user(value.from_time);
+              timesheet_record_info =
+                  "From time: " + `${from_time_formatted} ` + ",<br>Expected Time : " + `${(value.expected_time / 3600).toFixed(2)}` + "hrs" + ",<br>Goal is: " + value.goal;
 
-            let task_field_properties = {
-              fieldtype: "Link",
-              options: "Task",
-              label: __("Task"),
-              fieldname: "task",
-              in_list_view: 1,
-              read_only: 0,
-              default:task,
-              description:"Please consult the Project Manager if unsure which task to choose.",
-              get_query: function() {
-                  if (project) {
-                      return {
-                          filters: {
-                              project: project
+              frappe.db.get_value(
+                  "Employee",
+                  { user_id: frappe.session.user },
+                  "activity_type",
+                  function (value) {
+
+                      let task_field_properties = {
+                          fieldtype: "Link",
+                          options: "Task",
+                          label: __("Task"),
+                          fieldname: "task",
+                          in_list_view: 1,
+                          read_only: 0,
+                          default: task,
+                          description: "Please consult the Project Manager if unsure which task to choose.",
+                          get_query: function () {
+                              if (project) {
+                                  return {
+                                      filters: {
+                                          project: project
+                                      }
+                                  };
+                              } else {
+                                  return {};
+                              }
                           }
-                      };
-                  } else {
-                      return {};
-                  }
-              }}
-  
-              if (task_in_timesheet_record === "Task is hidden") {
-                task_field_properties.hidden = 1; // Hide the field
-              } else if (task_in_timesheet_record === "Task is optional") {
-                task_field_properties.reqd = 0; // Make it optional (non-mandatory)
-                task_field_properties.description = "Please consult the Project Manager if unsure which task to choose."
-              } else if (task_in_timesheet_record === "Task is mandatory") {
-                task_field_properties.reqd = 1; // Make it mandatory
-                task_field_properties.description = "Please consult the Project Manager if unsure which Task to choose."
-              }
+                      }
 
-            let dialog = new frappe.ui.Dialog({
-              title: __("Mark Complete Timesheet record."),
-              fields: [
-                {
-                  fieldtype: "Data",
-                  label: __("Timesheet Record"),
-                  fieldname: "timesheet_record",
-                  in_list_view: 1,
-                  read_only: 1,
-                  default: timesheet_record,
-                },
-                task_field_properties, 
+                      if (task_in_timesheet_record === "Task is hidden") {
+                          task_field_properties.hidden = 1; // Hide the field
+                      } else if (task_in_timesheet_record === "Task is optional") {
+                          task_field_properties.reqd = 0; // Make it optional (non-mandatory)
+                          task_field_properties.description = "Please consult the Project Manager if unsure which task to choose."
+                      } else if (task_in_timesheet_record === "Task is mandatory") {
+                          task_field_properties.reqd = 1; // Make it mandatory
+                          task_field_properties.description = "Please consult the Project Manager if unsure which Task to choose."
+                      }
 
-                {
-                  fieldtype: "Small Text",
-                  label: __("Timesheet Record Info"),
-                  fieldname: "timesheet_record_info",
-                  in_list_view: 1,
-                  read_only: 1,
-                  default: timesheet_record_info,
-                },
-                {
-                  fieldtype: "Column Break",
-                },
-                {
-                  label: "Time",
-                  fieldname: "to_time",
-                  fieldtype: "Datetime",
-                  reqd: 1,
-                },
+                      let dialog = new frappe.ui.Dialog({
+                          title: __("Mark Complete Timesheet record."),
+                          fields: [
+                              {
+                                  fieldtype: "Data",
+                                  label: __("Timesheet Record"),
+                                  fieldname: "timesheet_record",
+                                  in_list_view: 1,
+                                  read_only: 1,
+                                  default: timesheet_record,
+                              },
+                              task_field_properties,
 
-                {
-                  fieldtype: "Select",
-                  options: [0, 25, 50, 75, 100],
-                  label: __("Percent Billable"),
-                  fieldname: "percent_billable",
-                  in_list_view: 1,
-                  reqd: 1,
-                  default: percent_billable,
-                  description:
-                    "This is a personal indicator to your own performance on the work you have done. It will influence the billable time of the Timesheet created.",
-                },
-                {
-                  fieldtype: "Column Break",
-                },
-                {
-                  fieldtype: "Link",
-                  options: "Activity Type",
-                  label: __("Activity Type"),
-                  fieldname: "activity_type",
-                  in_list_view: 1,
-                  reqd: 1,
-                  default: value.activity_type,
-                  description:
-                    'The "Activity Type" allows for categorizing tasks into specific types, such as planning, execution, communication, and proposal writing, streamlining task management and organization within the system.',
-                },
-                {
-                  fieldtype: "Column Break",
-                },
-                {
-                  label: "What I did ",
-                  fieldname: "result",
-                  fieldtype: "Small Text",
-                  reqd: 1,
-                  description:
-                    "⚠️ This information is sent to the customer next day. Please make sure to wright meaningful text. Adding Issues ID's and or URL is helpful.",
-                },
-              ],
-              primary_action_label: __("Update Timesheet Record."),
-              primary_action(values) {
-                // add Frappe Confirm Dialog validation on 'update timesheet record' button.
-                //Most of time user adds 'end date and time' wrong. If 'end date and time' is more than expected time, then we will prompt user to recheck and correct it.
-              frappe.call({
-                method:"phamos.phamos.page.project_action_panel.project_action_panel.set_actual_time",
-                args: {
-                  "from_time": from_time,
-                  "to_time": values.to_time
-                },
-                callback: function(r) {
-                  if(!r.exc){
-                    function formatTime(seconds) {
-                      const hours = Math.floor(seconds / 3600);
-                      const minutes = Math.floor((seconds % 3600) / 60);
-                      return `${hours} hrs ${minutes} mins`;
-                    }
-                    
-                    const expectedHours = expected_time / 3600;
-                    const actualHours = r.message / 3600;
-                    const diffInHours = actualHours - expectedHours;
+                              {
+                                  fieldtype: "Small Text",
+                                  label: __("Timesheet Record Info"),
+                                  fieldname: "timesheet_record_info",
+                                  in_list_view: 1,
+                                  read_only: 1,
+                                  default: timesheet_record_info,
+                              },
+                              {
+                                  fieldtype: "Column Break",
+                              },
+                              {
+                                  label: "Time",
+                                  fieldname: "to_time",
+                                  fieldtype: "Datetime",
+                                  reqd: 1,
+                              },
 
-                    frappe.db.get_single_value("phamos Settings", "allowed_additional_work_time").then((value) => {
-                      console.log(value)
-                      if(value) {
-                        allowed_additional_work_time_mins = value
-                        allowed_additional_work_time_hrs = allowed_additional_work_time_mins/60
-                        if (diffInHours > allowed_additional_work_time_hrs) { // More than 30 minutes
-                          const message = "Actual work is more than "+ allowed_additional_work_time_mins + "minutes above the expected time. Please review and confirm.";
-                          const confirm_msg = `
+                              {
+                                  fieldtype: "Select",
+                                  options: [0, 25, 50, 75, 100],
+                                  label: __("Percent Billable"),
+                                  fieldname: "percent_billable",
+                                  in_list_view: 1,
+                                  reqd: 1,
+                                  default: percent_billable,
+                                  description:
+                                      "This is a personal indicator to your own performance on the work you have done. It will influence the billable time of the Timesheet created.",
+                              },
+                              {
+                                  fieldtype: "Column Break",
+                              },
+                              {
+                                  fieldtype: "Link",
+                                  options: "Activity Type",
+                                  label: __("Activity Type"),
+                                  fieldname: "activity_type",
+                                  in_list_view: 1,
+                                  reqd: 1,
+                                  default: value.activity_type,
+                                  description:
+                                      'The "Activity Type" allows for categorizing tasks into specific types, such as planning, execution, communication, and proposal writing, streamlining task management and organization within the system.',
+                              },
+                              {
+                                  fieldtype: "Column Break",
+                              },
+                              {
+                                  label: "What I did ",
+                                  fieldname: "result",
+                                  fieldtype: "Small Text",
+                                  reqd: 1,
+                                  description:
+                                      "⚠️ This information is sent to the customer next day. Please make sure to wright meaningful text. Adding Issues ID's and or URL is helpful.",
+                              },
+                          ],
+                          primary_action_label: __("Update Timesheet Record."),
+                          primary_action(values) {
+                              // add Frappe Confirm Dialog validation on 'update timesheet record' button.
+                              //Most of time user adds 'end date and time' wrong. If 'end date and time' is more than expected time, then we will prompt user to recheck and correct it.
+                              frappe.call({
+                                  method: "phamos.phamos.page.project_action_panel.project_action_panel.set_actual_time",
+                                  args: {
+                                      "from_time": from_time,
+                                      "to_time": values.to_time
+                                  },
+                                  callback: function (r) {
+                                      if (!r.exc) {
+                                          function formatTime(seconds) {
+                                              const hours = Math.floor(seconds / 3600);
+                                              const minutes = Math.floor((seconds % 3600) / 60);
+                                              return `${hours} hrs ${minutes} mins`;
+                                          }
+
+                                          const expectedHours = expected_time / 3600;
+                                          const actualHours = r.message / 3600;
+                                          const diffInHours = actualHours - expectedHours;
+
+                                          frappe.db.get_single_value("phamos Settings", "allowed_additional_work_time").then((value) => {
+                                              if (value) {
+                                                  allowed_additional_work_time_mins = value
+                                                  allowed_additional_work_time_hrs = allowed_additional_work_time_mins / 60
+                                                  if (diffInHours > allowed_additional_work_time_hrs) { // More than 30 minutes
+                                                      const message = "Actual work is more than " + allowed_additional_work_time_mins + "minutes above the expected time. Please review and confirm.";
+                                                      const confirm_msg = `
                             Expected time is: ${formatTime(expected_time)} and actual work is: ${formatTime(r.message)}. 
                             ${message}
-                          `; 
-                          frappe.confirm(
-                            confirm_msg,
-                            function () {
-                              // If user clicks "Yes"
-                              update_and_submit_timesheet_record(
-                                values.timesheet_record,
-                                values.task,
-                                values.to_time,
-                                values.percent_billable,
-                                values.activity_type,
-                                values.result
-                              );
-                              dialog.hide();
-            
-                            },
-                            function () {
-                              // If user clicks "No"
-                              //frappe.msgprint('You clicked No!');
-                              // Cancel the action here or do nothing
-                            }
-                          );
-                        }
-                        else{
-                          update_and_submit_timesheet_record(
-                            values.timesheet_record,
-                            values.task,
-                            values.to_time,
-                            values.percent_billable,
-                            values.activity_type,
-                            values.result
-                          );
-                          dialog.hide();
-                        }
-                      }
-                    })
+                          `;
+                                                      frappe.confirm(
+                                                          confirm_msg,
+                                                          function () {
+                                                              // If user clicks "Yes"
+                                                              update_and_submit_timesheet_record(
+                                                                  values.timesheet_record,
+                                                                  values.task,
+                                                                  values.to_time,
+                                                                  values.percent_billable,
+                                                                  values.activity_type,
+                                                                  values.result
+                                                              );
+                                                              dialog.hide();
+
+                                                          },
+                                                          function () {
+                                                              // If user clicks "No"
+                                                              //frappe.msgprint('You clicked No!');
+                                                              // Cancel the action here or do nothing
+                                                          }
+                                                      );
+                                                  }
+                                                  else {
+                                                      update_and_submit_timesheet_record(
+                                                          values.timesheet_record,
+                                                          values.task,
+                                                          values.to_time,
+                                                          values.percent_billable,
+                                                          values.activity_type,
+                                                          values.result
+                                                      );
+                                                      dialog.hide();
+                                                  }
+                                              }
+                                          })
+                                      }
+                                  }
+                              });
+                          },
+                      });
+                      // Set the width using CSS
+                      dialog.$wrapper.find(".modal-dialog").css("max-width", "900px");
+                      dialog.show();
                   }
-                }
-              });
-              },
-            });
-            // Set the width using CSS
-            dialog.$wrapper.find(".modal-dialog").css("max-width", "900px");
-            dialog.show();
+              );
           }
-        );
-      }
-    );
+      );
   };
   //return record.timesheet_record_draft;
 
-  window.selfAssignProject = function(project_name){
-    frappe.call({
-      method:"phamos.phamos.page.project_action_panel.project_action_panel.self_assign_project",
-      args:{
-        project_name :project_name
-      },
-      callback:function(r){
-        if(r.message){
-          frappe.msgprint({
-            title:__("Success"),
-            message:__("Project Assigned Successfully."),
-            indicator:"green"
-          });
-          render_datatable() 
-        }
-      },
-      error:function(err){
-        frappe.msgprint({
-          title:__("Error"),
-          message:__("Failed to assign project. Please Check the error logs."),
-          indicator:"red"
-        });
-      }
-    })
+  window.selfAssignProject = function (project_name) {
+      frappe.call({
+          method: "phamos.phamos.page.project_action_panel.project_action_panel.self_assign_project",
+          args: {
+              project_name: project_name
+          },
+          callback: function (r) {
+              if (r.message) {
+                  frappe.msgprint({
+                      title: __("Success"),
+                      message: __("Project Assigned Successfully."),
+                      indicator: "green"
+                  });
+                  render_datatable()
+              }
+          },
+          error: function (err) {
+              frappe.msgprint({
+                  title: __("Error"),
+                  message: __("Failed to assign project. Please Check the error logs."),
+                  indicator: "red"
+              });
+          }
+      })
   }
 
-  window.assignProject = function(project_name) {
-    // Instantiate AssignToDialog if not already done
-    let assign_to = new frappe.ui.form.AssignToDialog({
-        method: "frappe.desk.form.assign_to.add", // Method for assignment
-        doctype: "Project", // The doctype of the document being assigned
-        docname: project_name, // The document name to be assigned
-        callback: function (r) {
-            // Handle the response from the assignment action
-            
-            if (r.message) {
-                // You can add logic here to update the UI or provide user feedback
-                frappe.show_alert({
-                    message: __('Users assigned successfully!'),
-                    indicator: 'green'
-                });
-                render_datatable() 
-            }
-        },
-    });
+  window.assignProject = function (project_name) {
+      // Instantiate AssignToDialog if not already done
+      let assign_to = new frappe.ui.form.AssignToDialog({
+          method: "frappe.desk.form.assign_to.add", // Method for assignment
+          doctype: "Project", // The doctype of the document being assigned
+          docname: project_name, // The document name to be assigned
+          callback: function (r) {
+              // Handle the response from the assignment action
 
-    // Ensure the dialog is ready to show
-    if (assign_to.dialog) {
-        // Check if the show method exists
-        if (typeof assign_to.dialog.show === 'function') {
-            assign_to.dialog.show(); // Show the dialog
-        } else {
-            console.error("Error: show() method is not available on assign_to.dialog");
-        }
-    } else {
-        console.error("Error: AssignToDialog was not instantiated correctly.");
-    }
+              if (r.message) {
+                  // You can add logic here to update the UI or provide user feedback
+                  frappe.show_alert({
+                      message: __('Users assigned successfully!'),
+                      indicator: 'green'
+                  });
+                  render_datatable()
+              }
+          },
+      });
+
+      // Ensure the dialog is ready to show
+      if (assign_to.dialog) {
+          // Check if the show method exists
+          if (typeof assign_to.dialog.show === 'function') {
+              assign_to.dialog.show(); // Show the dialog
+          } else {
+              console.error("Error: show() method is not available on assign_to.dialog");
+          }
+      } else {
+          console.error("Error: AssignToDialog was not instantiated correctly.");
+      }
   };
 
 
-  window.startProject = function (project_name, customer,project,task_in_timesheet_record) {
-    frappe.call({
-      method:
-        "phamos.phamos.page.project_action_panel.project_action_panel.check_draft_timesheet_record",
-      callback: function (r) {
-        if (r.message) {
-          let timesheetRecordDrafts = r.message;
-          let doc = frappe.model.sync(r.message);
-          let draftTimesheets = timesheetRecordDrafts
-            .map(function (record) {
-              return `<a href="https://phamos.eu/app/timesheet-record/${record.timesheet_record_draft}" target="_blank">${record.timesheet_record_draft}</a>`;
-            })
-            .join(", ");
+  window.startProject = function (project_name, customer, project, task_in_timesheet_record) {
+      frappe.call({
+          method:
+              "phamos.phamos.page.project_action_panel.project_action_panel.check_draft_timesheet_record",
+          callback: function (r) {
+              if (r.message) {
+                  let timesheetRecordDrafts = r.message;
+                  let doc = frappe.model.sync(r.message);
+                  let draftTimesheets = timesheetRecordDrafts
+                      .map(function (record) {
+                          return `<a href="https://phamos.eu/app/timesheet-record/${record.timesheet_record_draft}" target="_blank">${record.timesheet_record_draft}</a>`;
+                      })
+                      .join(", ");
 
-          if (timesheetRecordDrafts && timesheetRecordDrafts.length > 0) {
-            //frappe.msgprint(__("Draft Timesheet Records: "+ draftTimesheets+" found. Please submit them before creating a new one."));
-            let confirm_msg =
-              "Draft Timesheet Records: " +
-              draftTimesheets +
-              " found. If you want to submit before creating a new one, Click Yes?";
-            frappe.confirm(
-              confirm_msg,
-              function () {
-                // If user clicks "Yes"
-                frappe.db.get_value(
-                  "Timesheet Record",
-                  { name: timesheetRecordDrafts[0].timesheet_record_draft },
-                  "project",
-                  function (value) {
-                    frappe.db.get_value(
-                      "Project",
-                      { name: value.project },
-                      "percent_billable",
-                      function (value_pb) {
-                        stopProject(
-                          timesheetRecordDrafts[0].timesheet_record_draft,
-                          value_pb.percent_billable
-                        );
+                  if (timesheetRecordDrafts && timesheetRecordDrafts.length > 0) {
+                      //frappe.msgprint(__("Draft Timesheet Records: "+ draftTimesheets+" found. Please submit them before creating a new one."));
+                      let confirm_msg =
+                          "Draft Timesheet Records: " +
+                          draftTimesheets +
+                          " found. If you want to submit before creating a new one, Click Yes?";
+                      frappe.confirm(
+                          confirm_msg,
+                          function () {
+                              // If user clicks "Yes"
+                              frappe.db.get_value(
+                                  "Timesheet Record",
+                                  { name: timesheetRecordDrafts[0].timesheet_record_draft },
+                                  "project",
+                                  function (value) {
+                                      frappe.db.get_value(
+                                          "Project",
+                                          { name: value.project },
+                                          "percent_billable",
+                                          function (value_pb) {
+                                              stopProject(
+                                                  timesheetRecordDrafts[0].timesheet_record_draft,
+                                                  value_pb.percent_billable
+                                              );
+                                          }
+                                      );
+                                  }
+                              );
+                              // Perform the action here
+                          },
+                          function () {
+                              // If user clicks "No"
+                              //frappe.msgprint('You clicked No!');
+                              // Cancel the action here or do nothing
+                          }
+                      );
+                  } else {
+                      let task_field_properties = {
+                          fieldtype: "Link",
+                          options: "Task",
+                          label: __("Task"),
+                          fieldname: "task",
+                          in_list_view: 1,
+                          read_only: 0,
+                          description: "Please consult the Project Manager if unsure which task to choose.",
+                          get_query: function () {
+                              if (project) {
+                                  return {
+                                      filters: {
+                                          project: project
+                                      }
+                                  };
+                              } else {
+                                  return {};
+                              }
+                          }
+                      };
+
+                      // Modify visibility/requirement of the task field based on task_in_timesheet_record value
+                      if (task_in_timesheet_record === "Task is hidden") {
+                          task_field_properties.hidden = 1; // Hide the field
+                      } else if (task_in_timesheet_record === "Task is optional") {
+                          task_field_properties.reqd = 0; // Make it optional (non-mandatory)
+                          task_field_properties.description = "Please consult the Project Manager if unsure which task to choose."
+                      } else if (task_in_timesheet_record === "Task is mandatory") {
+                          task_field_properties.reqd = 1; // Make it mandatory
+                          task_field_properties.description = "Please consult the Project Manager if unsure which Task to choose."
                       }
-                    );
+                      var dialog = new frappe.ui.Dialog({
+                          title: __("Add Timesheet record."),
+                          fields: [
+                              {
+                                  fieldtype: "Data",
+                                  options: "Project",
+                                  label: __("Project Name"),
+                                  fieldname: "project_name",
+                                  in_list_view: 1,
+                                  read_only: 1,
+                                  default: project_name,
+                              },
+                              task_field_properties,
+                              {
+                                  fieldtype: "Data",
+                                  options: "Customer",
+                                  label: __("Customer"),
+                                  fieldname: "customer",
+                                  in_list_view: 1,
+                                  read_only: 1,
+                                  default: customer,
+                              },
+                              {
+                                  fieldtype: "Duration",
+                                  label: __("Expected Time"),
+                                  fieldname: "expected_time",
+                                  in_list_view: 1,
+                                  reqd: 1,
+                              },
+                              {
+                                  fieldtype: "Column Break",
+                              },
+                              {
+                                  fieldtype: "Datetime",
+                                  label: __("From Time"),
+                                  fieldname: "from_time",
+                                  in_list_view: 1,
+                                  reqd: 1,
+                                  read_only: 0,
+                              },
+                              {
+                                  fieldtype: "Small Text",
+                                  label: __("Goal"),
+                                  fieldname: "goal",
+                                  in_list_view: 1,
+                                  reqd: 1,
+                                  description:
+                                      "⚠️ User need to manifest on what you are working and going to do. This will be shared with the customer next day.",
+                              },
+                          ],
+                          primary_action_label: __("Create Timesheet Record."),
+                          primary_action(values) {
+                              create_timesheet_record(
+                                  values.project_name,
+                                  values.task,
+                                  values.customer,
+                                  values.from_time,
+                                  values.expected_time,
+                                  values.goal
+                              );
+                              dialog.hide();
+                          },
+                      });
+
+                      // Set the width using CSS
+                      dialog.$wrapper.find(".modal-dialog").css("max-width", "800px");
+                      dialog.show();
                   }
-                );
-                // Perform the action here
-              },
-              function () {
-                // If user clicks "No"
-                //frappe.msgprint('You clicked No!');
-                // Cancel the action here or do nothing
+              } else {
+                  frappe.msgprint(__("No response from server. Please try again."));
               }
-            );
-          } else {
-            let task_field_properties = {
-              fieldtype: "Link",
-              options: "Task",
-              label: __("Task"),
-              fieldname: "task",
-              in_list_view: 1,
-              read_only: 0,
-              description:"Please consult the Project Manager if unsure which task to choose.",
-              get_query: function () {
-                if (project) {
-                  return {
-                    filters: {
-                      project: project
-                    }
-                  };
-                } else {
-                  return {};
-                }
-              }
-            };
-
-            // Modify visibility/requirement of the task field based on task_in_timesheet_record value
-          if (task_in_timesheet_record === "Task is hidden") {
-            task_field_properties.hidden = 1; // Hide the field
-          } else if (task_in_timesheet_record === "Task is optional") {
-            task_field_properties.reqd = 0; // Make it optional (non-mandatory)
-            task_field_properties.description = "Please consult the Project Manager if unsure which task to choose."
-          } else if (task_in_timesheet_record === "Task is mandatory") {
-            task_field_properties.reqd = 1; // Make it mandatory
-            task_field_properties.description = "Please consult the Project Manager if unsure which Task to choose."
-          }
-            var dialog = new frappe.ui.Dialog({
-              title: __("Add Timesheet record."),
-              fields: [
-                {
-                  fieldtype: "Data",
-                  options: "Project",
-                  label: __("Project Name"),
-                  fieldname: "project_name",
-                  in_list_view: 1,
-                  read_only: 1,
-                  default: project_name,
-                },
-                task_field_properties,
-                {
-                  fieldtype: "Data",
-                  options: "Customer",
-                  label: __("Customer"),
-                  fieldname: "customer",
-                  in_list_view: 1,
-                  read_only: 1,
-                  default: customer,
-                },
-                {
-                  fieldtype: "Duration",
-                  label: __("Expected Time"),
-                  fieldname: "expected_time",
-                  in_list_view: 1,
-                  reqd: 1,
-                },
-                {
-                  fieldtype: "Column Break",
-                },
-                {
-                  fieldtype: "Datetime",
-                  label: __("From Time"),
-                  fieldname: "from_time",
-                  in_list_view: 1,
-                  reqd: 1,
-                  read_only: 0,
-                },
-                { 
-                  fieldtype: "Small Text",
-                  label: __("Goal"),
-                  fieldname: "goal",
-                  in_list_view: 1,
-                  reqd: 1,
-                  description:
-                    "⚠️ User need to manifest on what you are working and going to do. This will be shared with the customer next day.",
-                },
-              ],
-              primary_action_label: __("Create Timesheet Record."),
-              primary_action(values) {
-                create_timesheet_record(
-                  values.project_name,
-                  values.task,
-                  values.customer,
-                  values.from_time,
-                  values.expected_time,
-                  values.goal
-                );
-                dialog.hide();
-              },
-            });
-
-            // Set the width using CSS
-            dialog.$wrapper.find(".modal-dialog").css("max-width", "800px");
-            dialog.show();
-          }
-        } else {
-          frappe.msgprint(__("No response from server. Please try again."));
-        }
-      },
-    });
+          },
+      });
   };
 
 
   // Function to render number cards
   function render_cards(wrapper, card_names) {
-    return frappe.call({
-      method: "phamos.phamos.page.project_action_panel.project_action_panel.get_permitted_cards",
-      args: { 
-        dashboard_name: "Project Management",
-      },
-      callback: function (response) {
-        var cards = response.message;
-        if (!cards || !cards.length) {
-          return;
-        }
 
-      // Filter the cards based on card_names
-        var filtered_cards = cards.filter(function(card) {
-          return card_names.includes(card.card);
-        });
+    const cardWrapper = document.getElementById("card-wrapper");
+    cardWrapper.innerHTML = ""; // Clear existing content
 
-        var number_cards = filtered_cards.map(function (card) {
-          return {
-            name: card.card,
-          };
-        });
+    console.log("cardWrapper", cardWrapper)
 
-        var number_card_group = new frappe.widget.WidgetGroup({
-          container: wrapper, 
-          type: "number_card",
-          columns: 3,
-          options: {
-            allow_sorting: false,
-            allow_create: false,
-            allow_delete: false,
-            allow_hiding: false,
-            allow_edit: false,
+    // Clear the card-wrapper div before adding new content
+      return frappe.call({
+          method: "phamos.phamos.page.project_action_panel.project_action_panel.get_permitted_cards",
+          args: {
+              dashboard_name: "Project Management",
           },
-          widgets: number_cards,
-        });
+          callback: function (response) {
+              var cards = response.message;
+              if (!cards || !cards.length) {
+                  return;
+              }
 
-        $(wrapper).find(".widget.number-widget-box").css({
-         width: "250px", 
-        });
+              // Filter the cards based on card_names
+              var filtered_cards = cards.filter(function (card) {
+                  return card_names.includes(card.card);
+              });
 
-        $(wrapper).find(".widget-group-body.grid-col-3").css({
-          display: "flex", 
-          "flex-wrap": "nowrap", 
-        });
-      },
-    });
+              var number_cards = filtered_cards.map(function (card) {
+                  return {
+                      name: card.card,
+                  };
+              });
+
+              var number_card_group = new frappe.widget.WidgetGroup({
+                  container: wrapper,
+                  type: "number_card",
+                  columns: 3,
+                  options: {
+                      allow_sorting: false,
+                      allow_create: false,
+                      allow_delete: false,
+                      allow_hiding: false,
+                      allow_edit: false,
+                  },
+                  widgets: number_cards,
+              });
+
+              $(wrapper).find(".widget.number-widget-box").css({
+                  width: "250px",
+              });
+
+              $(wrapper).find(".widget-group-body.grid-col-3").css({
+                  display: "flex",
+                  "flex-wrap": "nowrap",
+              });
+          },
+      });
   }
 
-  
-  // Function to render DataTable with tabs
-function renderDataTable(wrapper, projectData) {
- // Ensure wrapper is defined
-    if (!wrapper) {
-      return;
-    }
 
-    // Set the default active tab to 'Your Projects'
-    wrapper.innerHTML = `
+  // Function to render DataTable with tabs
+  function renderDataTable(wrapper, projectData) {
+      // Ensure wrapper is defined
+      if (!wrapper) {
+          return;
+      }
+
+      // Set the default active tab to 'Your Projects'
+      wrapper.innerHTML = `
         <h2 style="display: inline; margin-left: 50px; margin-top: 10px; font-size:30px">
           Project Action Panel
           <!-- Info Icon -->
         </h2>
         <div class="form-tabs-list">
           <ul class="nav form-tabs" id="form-tabs" role="tablist">
+            <!-- 'Recent Projects' tab 130 -->
             <li class="nav-item show">
-              <!-- 'Recent Projects' tab is the default active tab -->
               <a class="nav-link" id="DAP-recent-project-tab" role="tab" aria-controls="recent-projects" aria-selected="false">
                   Recent Projects
               </a>
@@ -690,116 +690,22 @@ function renderDataTable(wrapper, projectData) {
               </a>
             </li>
           </ul>
-
-          <!-- 79 -->
-          <!-- Dropdown Popup (now placed directly below the tab) -->
-            <div id="dropdown-popup" class="dropdown-popup">
-              <label for="date-filter" class="form-label fw-bold">Filter: </label>
-              <select id="date-filter" class="form-select mb-2">
-                <option value="7">Last 7 Days</option>
-                <option value="30">Last 30 Days</option>
-                <option value="custom">Custom Date</option>
-              </select>
-
-              <!-- Custom Date Range Fields (Side-by-side in one line) -->
-              <div id="custom-date-range" class="custom-date-range" style="display:none;">
-                  <div>
-                    <label for="from-date" class="form-label fw-bold">From:</label>
-                    <input type="date" id="from-date" class="form-control mb-2">
-                  </div>
-                  <div>
-                    <label for="to-date" class="form-label fw-bold">To:</label>
-                    <input type="date" id="to-date" class="form-control mb-2">
-                  </div>
-              </div>
-
-              <!-- Apply and Reset buttons -->
-              <div class="mt-2">
-                <button id="apply-btn" class="btn btn-primary" style="font-size: x-small;">Apply</button>
-                <button id="reset-btn" class="btn btn-secondary" style="background: lightgrey;font-size: x-small;">Reset</button>
-              </div>
-            </div>
-
         </div>
         <div id="content-wrapper" style="margin-top: 20px; margin-left: 30px;">
-
           <div id="card-wrapper"></div>
 
-          <!-- '124 start -->
-					<div id="custom-filters" style="margin: 20px 0;display: flex;gap: 10px;"></div>
-					<!-- 124 end -->
+          <!-- time-span filter 130 -->
+          <div class="dropdown-container" style="display:none">
+            <select id="time-span-select" class="custom-dropdown-timespan"></select>
+          </div>
+          <button id="reset-filter" class="btn btn-secondary btn-sm btn-modal-secondary" style="display:none">Reset</button>
 
           <div id="datatable-wrapper"></div>
         </div>
       `;
-
-      // 124 start
-      frappe.db.get_list("Project", { fields: ["name", "project_name"] }).then((res) => {
-        var $MultiSelectDiv = $('<div></div>');
-        $('#custom-filters').empty().append($MultiSelectDiv);
-
-        const optionsString = res.map(doc => `${doc.name} (${doc.project_name})`).join("\n");
-
-        project_filter = frappe.ui.form.make_control({
-          parent: $MultiSelectDiv,
-          df: {
-            label: "Project",
-            fieldname: "project_filter",
-            fieldtype: "MultiSelect",
-            options: optionsString,
-            change: (e) => {
-              applyFilter();
-            }
-          },
-          render_input: true,
-        });
-
-        customer_filter = frappe.ui.form.make_control({
-          parent: $("#custom-filters"),
-          df: {
-            label: "Customer",
-            fieldname: "customer",
-            fieldtype: "Link",
-            options: "Customer",
-            columns: 3,
-            change: (e) => {
-              applyFilter();
-            }
-          },
-          render_input: true,
-        });
-      });
-
-      function applyFilter() {
-        let selectedProjects = (project_filter.value || "").split(",")
-          .map(item => item.split("(")[0].trim())
-          .filter(Boolean);
-
-        let selectedCustomer = customer_filter.value; // Use the correct reference
-
-        frappe.call({
-          method: "phamos.phamos.page.project_action_panel.project_action_panel.fetch_all_projects",
-          callback: function (r) {
-            let data = r.message || [];
-
-            if (selectedCustomer) {
-              data = data.filter(customer => customer.customer === selectedCustomer);
-            }
-
-            if (selectedProjects.length) {
-              data = data.filter(project => selectedProjects.includes(project.name));
-            }
-
-            console.log("Filtered Data:", data);
-            datatable.refresh(data);
-          }
-        });
-      }
-      // 124 end
-
-// Add CSS for the hover-over box
-    const tooltipStyle = document.createElement("style");
-    tooltipStyle.innerHTML = `
+      // Add CSS for the hover-over box
+      const tooltipStyle = document.createElement("style");
+      tooltipStyle.innerHTML = `
     #info-icon {
       position: relative;
       cursor: pointer;
@@ -825,30 +731,46 @@ function renderDataTable(wrapper, projectData) {
     `;
     document.head.appendChild(tooltipStyle);
 
-    //79
-    const dropDownStyle = document.createElement("style");
-    dropDownStyle.innerHTML = `
-      .dropdown-popup {
-        display: none;
-        background: white;
-        border: 1px solid #ddd;
-        padding: 15px;
+      //130 apply css for time-span-filter
+      const timeSpanFilter = document.createElement("style");
+      timeSpanFilter.innerHTML = `
+      /* Styling the dropdown */
+      .custom-dropdown-timespan {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: #f5f5f5;
+        border: none;
+        padding: 5px 15px;
         border-radius: 8px;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-        margin-top: 5px; /* Added spacing between tab and dropdown */
-        width: 100%;
-        max-width: 250px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        width: 180px;
+        cursor: pointer;
+        outline: none;
       }
-      .fade-in {
-        animation: fadeIn 0.3s ease-in-out;
+
+      /* Dropdown container */
+      .dropdown-container {
+        position: relative;
+        display: inline-block;
       }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
+
+      /* Custom dropdown arrow */
+      .dropdown-container::after {
+        content: '▾'; /* Down arrow */
+        font-size: 14px;
+        color: #666;
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
       }
     `;
-    document.head.appendChild(dropDownStyle);
-    
+    document.head.appendChild(timeSpanFilter);
+
 
     // Add the info icon with hover functionality
     const infoIcon = document.createElement("span");
@@ -864,145 +786,237 @@ function renderDataTable(wrapper, projectData) {
     // Get references to the tabs
     const your_projectsTab = document.getElementById("DAP-your-project-tab");
     const all_projectsTab = document.getElementById("DAP-all-project-tab");
-    //79
+
+    //130
     const recent_projectsTab = document.getElementById("DAP-recent-project-tab");
 
     // Event listener for the Your Projects tab
     your_projectsTab.addEventListener("click", () => {
-      // Remove 'active' class from All Projects tab and set to Your Projects
-      all_projectsTab.classList.remove("active");
-      your_projectsTab.classList.add("active");
-      //79
-      recent_projectsTab.classList.remove("active");
 
-      // Set visual feedback for selection
-      your_projectsTab.setAttribute("aria-selected", "true");
-      all_projectsTab.setAttribute("aria-selected", "false");
-      //79
-      recent_projectsTab.setAttribute("aria-selected", "false");
+        //hide time-span-filter 130
+        document.querySelector(".dropdown-container").style.display = "none";
 
-    // Show content for the Your Projects tab
-      show_tab("Your Projects", projectData);
+        //hide reset filter 130
+        document.querySelector("#reset-filter").style.display = "none";
+        
+
+        // Remove 'active' class from All Projects tab and set to Your Projects
+        all_projectsTab.classList.remove("active");
+        your_projectsTab.classList.add("active");
+
+        //130
+        recent_projectsTab.classList.remove("active");
+
+        // Set visual feedback for selection
+        your_projectsTab.setAttribute("aria-selected", "true");
+        all_projectsTab.setAttribute("aria-selected", "false");
+
+        //130
+        recent_projectsTab.setAttribute("aria-selected", "false");
+
+        // Show content for the Your Projects tab
+        show_tab("Your Projects", projectData);
     });
 
     // Event listener for the All Projects tab
     all_projectsTab.addEventListener("click", () => {
+
+        //hide time-span-filter 130
+        document.querySelector(".dropdown-container").style.display = "none";
+
+        //hide reset filter 130
+        document.querySelector("#reset-filter").style.display = "none";
+
         // Remove 'active' class from Your Projects tab and set to All Projects
         your_projectsTab.classList.remove("active");
         all_projectsTab.classList.add("active");
-        //79
+
+        //130
         recent_projectsTab.classList.remove("active");
 
         // Set visual feedback for selection
         all_projectsTab.setAttribute("aria-selected", "true");
         your_projectsTab.setAttribute("aria-selected", "false");
-        //79
+
+        //130
         recent_projectsTab.setAttribute("aria-selected", "false");
 
         // Show content for the All Projects tab
-      show_tab("All Projects", projectData);
+        show_tab("All Projects", projectData);
     });
 
-    //79
-    // Event listener for the All Projects tab
+    // Event listener for the recent Projects tab 130
     recent_projectsTab.addEventListener("click", (e) => {
-      // Remove 'active' class from Your Projects tab and set to All Projects
-      recent_projectsTab.classList.add("active");
-      all_projectsTab.classList.remove("active");
-      your_projectsTab.classList.remove("active");
+        // Remove 'active' class from Your Projects tab and set to All Projects
+        recent_projectsTab.classList.add("active");
+        all_projectsTab.classList.remove("active");
+        your_projectsTab.classList.remove("active");
 
-      // Set visual feedback for selection
-      recent_projectsTab.setAttribute("aria-selected", "true");
-      your_projectsTab.setAttribute("aria-selected", "false");
-      all_projectsTab.setAttribute("aria-selected", "false");
+        // Set visual feedback for selection
+        recent_projectsTab.setAttribute("aria-selected", "true");
+        your_projectsTab.setAttribute("aria-selected", "false");
+        all_projectsTab.setAttribute("aria-selected", "false");
 
-      // Show content for the All Projects tab
-      show_tab("Recent Projects", projectData);
-    
-      // Toggle dropdown
-      $("#dropdown-popup").slideToggle(200).addClass("fade-in"); 
+        // Show the time-span filter when clicking "Recent Projects"
+        const dropdownContainer = document.querySelector(".dropdown-container");
+        dropdownContainer.style.display = "inline-block";
 
-      // Hide the apply button
-      $("#apply-btn").fadeOut(200);
-       
+        //show reset button
+        document.querySelector("#reset-filter").style.display = "inline-block";
 
-      //catch date filter
-      // $("#date-filter").off("change").on("change", function (e) {
-      //   e.preventDefault();
-      //   $("#dropdown-popup").slideUp(200); // Hide dropdown after selection
-      //   show_tab("Recent Projects", projectData)
-      // });
+        // Get the dropdown select element
+        const selectElement = document.getElementById("time-span-select");
 
-      // Close dropdown if user clicks outside
-      $(document).off("click").on("click", function (event) {
-        if (!$(event.target).closest("#DAP-recent-project-tab, #dropdown-popup").length) {
-          $("#dropdown-popup").slideUp(200);
-        }
-      });
+        // Clear existing options to prevent duplicates
+        selectElement.innerHTML = "";
 
+        //130 time-span-filter
+        // Time-span filter options with mapped values
+        const timeSpanOptions = [
+            { label: "Last 7 Days", value: { type: "days", amount: -7 } },
+            { label: "Last 14 Days", value: { type: "days", amount: -14 } },
+            { label: "Last 30 Days", value: { type: "days", amount: -30 } },
+            { label: "Last Week", value: { type: "week", amount: -1 } },
+            { label: "Last Month", value: { type: "month", amount: -1 } },
+            { label: "Last Quarter", value: { type: "quarter", amount: -1 } },
+            { label: "Last 6 Months", value: { type: "months", amount: -6 } },
+            { label: "Last Year", value: { type: "year", amount: -1 } },
+            { label: "Yesterday", value: { type: "days", amount: -1 } },
+            { label: "Today", value: { type: "days", amount: 0 } },
+            { label: "Tomorrow", value: { type: "days", amount: 1 } },
+            { label: "This Week", value: { type: "week", amount: 0 } },
+            { label: "This Month", value: { type: "month", amount: 0 } },
+            { label: "This Quarter", value: { type: "quarter", amount: 0 } },
+            { label: "This Year", value: { type: "year", amount: 0 } },
+            { label: "Next 7 Days", value: { type: "days", amount: 7 } },
+            { label: "Next 14 Days", value: { type: "days", amount: 14 } },
+            { label: "Next 30 Days", value: { type: "days", amount: 30 } },
+            { label: "Next Week", value: { type: "week", amount: 1 } },
+            { label: "Next Month", value: { type: "month", amount: 1 } },
+            { label: "Next Quarter", value: { type: "quarter", amount: 1 } },
+            { label: "Next 6 Months", value: { type: "months", amount: 6 } },
+            { label: "Next Year", value: { type: "year", amount: 1 } }
+        ];
 
-      // Show or hide custom date range based on selected filter
-      $("#date-filter").off("change").on("change", function (e) {
-        if ($(this).val() === "custom") {
-            $("#custom-date-range").fadeIn(200); // Fade in custom date range
-            $("#apply-btn").fadeIn(200); // Show the apply button
-        } else {
-            $("#custom-date-range").fadeOut(200); // Fade out custom date range
-            $("#apply-btn").fadeOut(200); // Hide the apply button
-            $("#dropdown-popup").slideUp(200);
+        // Populate the dropdown after DOM is ready
+        setTimeout(() => {
+            const selectElement = document.getElementById("time-span-select");
 
-            
-            show_tab("Recent Projects", projectData)
-          }
-      });
+            if (selectElement) {
+                // Populate dropdown options
+                timeSpanOptions.forEach(({ label }, index) => {
+                    const opt = document.createElement("option");
+                    opt.value = index; // Store index to map later
+                    opt.textContent = label; // Display text
+                    selectElement.appendChild(opt);
+                });
 
-      // Apply custom date filter
-      $("#apply-btn").off('click').on('click', function () {
-          let fromDate = $("#from-date").val();
-          let toDate = $("#to-date").val();
-          if (fromDate && toDate) {
-              console.log("Applied filter from " + fromDate + " to " + toDate);
-              // Here you can handle the filter logic and pass the selected dates to the backend or use them in your app
-              show_tab("Recent Projects", projectData)
-          } else {
-              alert("Please select both From and To dates.");
-          }
-      });
+                // Add change event listener
+                $(selectElement).off("change").on("change",  function () {
+                    const selectedIndex = parseInt(this.value);
+                    const selectedOption = timeSpanOptions[selectedIndex];
 
-      // Reset filter to "All" and clear dates
-      $("#reset-btn").off('click').on('click', function () {
-          $("#date-filter").val("7");
-          $("#from-date").val("");
-          $("#to-date").val("");
-          $("#custom-date-range").fadeOut(200); // Fade out custom date range on reset
-          $("#apply-btn").fadeOut(200); // Hide apply button on reset
+                    if (selectedOption) {
+                        const { from_date, to_date } = getDateRange(selectedOption.value);
 
-          $("#dropdown-popup").slideUp(200);
-          show_tab("Recent Projects", projectData)
-      });
+                        let filterProjectData = filterProjectDataByDateRange(projectData, from_date, to_date);
 
-      
+                        show_tab("Recent Projects", filterProjectData);
+                        
+                    }
+                });
+
+                // Reset filter to default timespan
+                $("#reset-filter").off('click').on('click', function () {
+                    const selectElement = document.getElementById("time-span-select");
+                    selectElement.selectedIndex = 0;  // This sets it to the first option (Last 7 Days)
+                    show_tab("Recent Projects", projectData);
+                });
+            }
+        }, 0); // Runs after the DOM update
+
+        // Show content for the All Projects tab
+        show_tab("Recent Projects", projectData);
 
     });
 
-  // Initial tab content setup: Show content for 'Your Projects' by default
-  show_tab("Your Projects", projectData); // Set 'Your Projects' as default
-}
+    // Initial tab content setup: Show content for 'Your Projects' by default
+    show_tab("Your Projects", projectData); // Set 'Your Projects' as default
+  }
 
-// Show tab content based on the selected tab
-function show_tab(tab, projectData) {
-    const cardWrapper = document.getElementById("card-wrapper");
-    const datatableWrapper = document.getElementById("datatable-wrapper");
-    // Clear previous content of cardWrapper and datatableWrapper
-    cardWrapper.innerHTML = "";  // This will ensure the number cards don't duplicate
-    datatableWrapper.innerHTML = ""; // Clear previous DataTable content
-
-    //79 validate Recent Projects
-    if (tab === "Your Projects" || tab === "Recent Projects") {
-    // Logic to hide the specific column when "Your Projects" tab is active
   
-      let style = document.createElement("style");
-        style.innerHTML = `
+    // 130Function to filter projectData based on from_date and to_date
+    function filterProjectDataByDateRange(projectData, fromDate, toDate) {
+        // Convert fromDate and toDate to Date objects
+        const fromDateObj = new Date(fromDate);
+        const toDateObj = new Date(toDate);
+
+        const filteredData = projectData.filter(project => {
+            const todoCreationDate = new Date(project.todo_creation_date); // Convert todo_creation_date to Date object
+
+            // Validate if the todo_creation_date is a valid date
+            if (isNaN(todoCreationDate)) {
+                return false; // Skip invalid dates
+            }
+
+            // Check if the todo_creation_date is within the from_date and to_date range
+            return todoCreationDate >= fromDateObj && todoCreationDate <= toDateObj;
+        });
+        return filteredData;
+    }
+    
+    //130 function to return from date and to date
+    function getDateRange(option) {
+        let today = frappe.datetime.get_today(); // Get today's date
+        let from_date, to_date;
+
+        if (option.type === "days") {
+            from_date = frappe.datetime.add_days(today, option.amount);
+            to_date = today;
+        } else if (option.type === "week") {
+            from_date = frappe.datetime.add_days(today, option.amount * 7);
+            to_date = frappe.datetime.add_days(from_date, 6); // End of week
+        } else if (option.type === "month") {
+            from_date = frappe.datetime.month_start();
+            to_date = frappe.datetime.month_end();
+            if (option.amount !== 0) {
+                from_date = frappe.datetime.add_months(from_date, option.amount);
+                to_date = frappe.datetime.add_months(to_date, option.amount);
+            }
+        } else if (option.type === "quarter") {
+            from_date = frappe.datetime.quarter_start();
+            to_date = frappe.datetime.quarter_end();
+            if (option.amount !== 0) {
+                from_date = frappe.datetime.add_months(from_date, option.amount * 3);
+                to_date = frappe.datetime.add_months(to_date, option.amount * 3);
+            }
+        } else if (option.type === "year") {
+            from_date = frappe.datetime.year_start();
+            to_date = frappe.datetime.year_end();
+            if (option.amount !== 0) {
+                from_date = frappe.datetime.add_months(from_date, option.amount * 12);
+                to_date = frappe.datetime.add_months(to_date, option.amount * 12);
+            }
+        }
+
+        return { from_date, to_date };
+    }
+
+  // Show tab content based on the selected tab
+  function show_tab(tab, projectData) {
+      const cardWrapper = document.getElementById("card-wrapper");
+      const datatableWrapper = document.getElementById("datatable-wrapper")
+
+      // Clear previous content of cardWrapper and datatableWrapper
+      cardWrapper.innerHTML = "";  // This will ensure the number cards don't duplicate
+      datatableWrapper.innerHTML = ""; // Clear previous DataTable content
+
+      //130 validate Recent Projects
+      if (tab === "Your Projects" || tab === "Recent Projects") {
+          // Logic to hide the specific column when "Your Projects" tab is active
+
+          let style = document.createElement("style");
+          style.innerHTML = `
           /* Hide the "Name" column cells and header */
           .dt-cell__content--col-14, 
           .dt-cell__content--header-14 { 
@@ -1013,85 +1027,82 @@ function show_tab(tab, projectData) {
           .dt-cell__content--col-9, .dt-cell__content--header-9 { display: table-cell;}
           .dt-cell__content--col-3, .dt-cell__content--header-3 { display: table-cell; }
         `;
-      document.head.appendChild(style);
+          document.head.appendChild(style);
 
-      // Render the cards for Your Projects
-      card_names = ["Your Total Projects", "Total Hrs Worked Today", "Total Hrs Worked This Week", "Total Hrs Worked This Month"];
-      render_cards(cardWrapper, card_names); // Call the render_cards function here
+          // Render the cards for Your Projects
+          card_names = ["Your Total Projects", "Total Hrs Worked Today", "Total Hrs Worked This Week", "Total Hrs Worked This Month"];
+          render_cards(cardWrapper, card_names); // Call the render_cards function here
 
-      //79 filter recent project
-      if(tab === "Recent Projects"){
-        //filter project here
-        let selectedValue = $("#date-filter").val();
-        
-        console.log("selected value:", selectedValue);
-        console.log("projectData", projectData)
+          //130 filter recent project
+          if (tab === "Recent Projects") {
+              //filter timespan here
+
+          }
+          // Render the DataTable for Your Projects
+          renderProjectDataTable(datatableWrapper, projectData); // Render the actual DataTable
       }
-      // Render the DataTable for Your Projects
-      renderProjectDataTable(datatableWrapper, projectData); // Render the actual DataTable
-    } 
-    else if (tab === "All Projects") {
-      let style = document.createElement("style");
-      style.innerHTML = `
+      else if (tab === "All Projects") {
+          let style = document.createElement("style");
+          style.innerHTML = `
         /* unHide the "Name" column cells and header */
         .dt-cell__content--col-14, .dt-cell__content--header-14 { display: table-cell; }
         .dt-cell__content--col-6, .dt-cell__content--header-6 { display: table-cell; }
         .dt-cell__content--col-3, .dt-cell__content--header-3 { display: table-cell; }
         .dt-cell__content--col-9, .dt-cell__content--header-9 { display: table-cell; }
         `;
-      document.head.appendChild(style);
+          document.head.appendChild(style);
 
-      // Define the cards to display
-      card_names = ["Total Projects", "Total Hrs Worked Today", "Total Hrs Worked This Week", "Total Hrs Worked This Month"];
-  
-      // Render the cards immediately to improve perceived speed
-      render_cards(cardWrapper, card_names);
+          // Define the cards to display
+          card_names = ["Total Projects", "Total Hrs Worked Today", "Total Hrs Worked This Week", "Total Hrs Worked This Month"];
 
-      // Make an API call to fetch all projects data asynchronously
-        frappe.call({
-          method: "phamos.phamos.page.project_action_panel.project_action_panel.fetch_all_projects",
-          callback: function (r) {
-            if (r.message) {
-              // Render DataTable with the fetched data once API response is received
-              renderProjectDataTable(datatableWrapper, r.message);
-            } else {
-              // Handle case with no data or error
-              datatableWrapper.innerHTML = `<p>No projects found.</p>`;
-            }
-          },
-          freeze: true,  // Optional: Add a freeze effect to indicate loading
-          freeze_message: "Loading projects...",  // Custom loading message
-        });
-    }
+          // Render the cards immediately to improve perceived speed
+          render_cards(cardWrapper, card_names);
 
-}
+          // Make an API call to fetch all projects data asynchronously
+          frappe.call({
+              method: "phamos.phamos.page.project_action_panel.project_action_panel.fetch_all_projects",
+              callback: function (r) {
+                  if (r.message) {
+                      // Render DataTable with the fetched data once API response is received
+                      renderProjectDataTable(datatableWrapper, r.message);
+                  } else {
+                      // Handle case with no data or error
+                      datatableWrapper.innerHTML = `<p>No projects found.</p>`;
+                  }
+              },
+              freeze: true,  // Optional: Add a freeze effect to indicate loading
+              freeze_message: "Loading projects...",  // Custom loading message
+          });
+      }
+
+  }
 
 
-// Function to render DataTable
-function renderProjectDataTable(datatableWrapper, projectData) {
-  // Define columns for the report view
-  let button_formatter1 = (value, row) => {
-    
-      return `<button type="button" style="height: 23px; width: 60px; display: flex; align-items: center; justify-content: center; background-color: rgb(255, 165, 0);" class="btn btn-primary btn-sm btn-modal-primary" onclick="assignProject('${row[10].content}')">Assign</button>`;
-    
-  };
-  let button_formatter = (value, row) => {
-    if (row[9].content == undefined ) {
-      return `<button type="button" style="height: 23px; width: 60px; display: flex; align-items: center; justify-content: center; background-color: rgb(0, 100, 0);" class="btn btn-primary btn-sm btn-modal-primary" onclick="startProject('${row[1].content}', '${row[4].content}', '${row[10].content}','${row[13]?.content}')">Start</button>`;
-    } else {
-      return `<button type="button" style="height: 23px; width: 60px; display: flex; align-items: center; justify-content: center; background-color: rgb(139, 0, 0);" class="btn btn-primary btn-sm btn-modal-primary" onclick="stopProject('${row[9].content}','${row[11].content}', '${row[10].content}','${row[12]?.content || ''}','${row[13]?.content}')">Stop</button>`;
-    }
-  };
-  
-  const button_formatter2 = (value, row, column, rowIndex, columnIndex, data) => {
-    // Extract the actual row index
-    const actualRowIndex = row[0]?.rowIndex;
-    
-    // Fallback for unique ID
-    const uniqueId = actualRowIndex !== undefined ? actualRowIndex : `row-${Math.random().toString(36).substring(7)}`;
-    const dropdownId = `dropdownMenu-${uniqueId}`;
-  
-    return `
+  // Function to render DataTable
+  function renderProjectDataTable(datatableWrapper, projectData) {
+      // Define columns for the report view
+      let button_formatter1 = (value, row) => {
+
+          return `<button type="button" style="height: 23px; width: 60px; display: flex; align-items: center; justify-content: center; background-color: rgb(255, 165, 0);" class="btn btn-primary btn-sm btn-modal-primary" onclick="assignProject('${row[10].content}')">Assign</button>`;
+
+      };
+      let button_formatter = (value, row) => {
+          if (row[9].content == undefined) {
+              return `<button type="button" style="height: 23px; width: 60px; display: flex; align-items: center; justify-content: center; background-color: rgb(0, 100, 0);" class="btn btn-primary btn-sm btn-modal-primary" onclick="startProject('${row[1].content}', '${row[4].content}', '${row[10].content}','${row[13]?.content}')">Start</button>`;
+          } else {
+              return `<button type="button" style="height: 23px; width: 60px; display: flex; align-items: center; justify-content: center; background-color: rgb(139, 0, 0);" class="btn btn-primary btn-sm btn-modal-primary" onclick="stopProject('${row[9].content}','${row[11].content}', '${row[10].content}','${row[12]?.content || ''}','${row[13]?.content}')">Stop</button>`;
+          }
+      };
+
+      const button_formatter2 = (value, row, column, rowIndex, columnIndex, data) => {
+          // Extract the actual row index
+          const actualRowIndex = row[0]?.rowIndex;
+
+          // Fallback for unique ID
+          const uniqueId = actualRowIndex !== undefined ? actualRowIndex : `row-${Math.random().toString(36).substring(7)}`;
+          const dropdownId = `dropdownMenu-${uniqueId}`;
+
+          return `
       <div class="custom-dropdown">
         <button
           class="btn btn-primary btn-sm btn-modal-primary dropdown-btn"
@@ -1107,37 +1118,37 @@ function renderProjectDataTable(datatableWrapper, projectData) {
         </div>
       </div>
     `;
-  };
-  
+      };
 
-  let columns = [
-    { label: "<b>Project Name</b>", id: "project_name", fieldtype: "Data", width: 180, editable: false, visible: false },
-    { label: "<b>Project</b>", id: "project_desc", fieldtype: "Data", width: 340, editable: false, format: linkFormatter1 },
-    { label: "<b>Action</b>", focusable: false, format: button_formatter, width: 100 },
-    { label: "<b>Customer Name</b>", id: "customer", fieldtype: "Link", width: 120, editable: false },
-    { label: "<b>Customer</b>", id: "customer_desc", fieldtype: "Link", width: 340, editable: false, format: linkFormatter },
-    { label: "<b>Hours Status</b>", id: "planned_hours", fieldtype: "Data", width: 230, editable: false,format: hoursFormatter },
-    { label: "<b></b>", id: "spent_hours_draft", fieldtype: "Float", width: 70, editable: false },
-    { label: "<b></b>", id: "spent_hours_submitted", fieldtype: "Float", width: 70, editable: false },
-    { label: "<b>Timesheet Record</b>", id: "timesheet_record", fieldtype: "Link", width: 180, editable: false, format: linkFormatter2 },
-    { label: "<b>Name</b>", id: "name", fieldtype: "Link", width: 140, editable: false },
-    { label: "<b>percent_billable</b>", id: "percent_billable", fieldtype: "Data", width: 0, editable: false },
-    { label: "<b>Task</b>", id: "task", fieldtype: "Link", width: 0, editable: false },
-    { label: "<b>task_in_timesheet_record</b>", id: "task_in_timesheet_record", fieldtype: "Data", width: 0, editable: false },
-    {
-      label: '<svg class="icon icon-sm"><use href="#icon-assign"></use></svg> <b>Assign To</b>', 
-      focusable: false, 
-      format: button_formatter2, 
-      width: 120 
-    }
-  ];
-  function hoursFormatter(value, row) {
-    const plannedHours = row[6]?.content || 0; // Planned hours
-    const spentDraft = row[7]?.content || 0;  // Spent hours (Draft)
-    const spentSubmitted = row[8]?.content || 0; // Spent hours (Submitted)
-  
-    // Combine into a styled display
-    return `
+
+      let columns = [
+          { label: "<b>Project Name</b>", id: "project_name", fieldtype: "Data", width: 180, editable: false, visible: false },
+          { label: "<b>Project</b>", id: "project_desc", fieldtype: "Data", width: 340, editable: false, format: linkFormatter1 },
+          { label: "<b>Action</b>", focusable: false, format: button_formatter, width: 100 },
+          { label: "<b>Customer Name</b>", id: "customer", fieldtype: "Link", width: 120, editable: false },
+          { label: "<b>Customer</b>", id: "customer_desc", fieldtype: "Link", width: 340, editable: false, format: linkFormatter },
+          { label: "<b>Hours Status</b>", id: "planned_hours", fieldtype: "Data", width: 230, editable: false, format: hoursFormatter },
+          { label: "<b></b>", id: "spent_hours_draft", fieldtype: "Float", width: 70, editable: false },
+          { label: "<b></b>", id: "spent_hours_submitted", fieldtype: "Float", width: 70, editable: false },
+          { label: "<b>Timesheet Record</b>", id: "timesheet_record", fieldtype: "Link", width: 180, editable: false, format: linkFormatter2 },
+          { label: "<b>Name</b>", id: "name", fieldtype: "Link", width: 140, editable: false },
+          { label: "<b>percent_billable</b>", id: "percent_billable", fieldtype: "Data", width: 0, editable: false },
+          { label: "<b>Task</b>", id: "task", fieldtype: "Link", width: 0, editable: false },
+          { label: "<b>task_in_timesheet_record</b>", id: "task_in_timesheet_record", fieldtype: "Data", width: 0, editable: false },
+          {
+              label: '<svg class="icon icon-sm"><use href="#icon-assign"></use></svg> <b>Assign To</b>',
+              focusable: false,
+              format: button_formatter2,
+              width: 120
+          }
+      ];
+      function hoursFormatter(value, row) {
+          const plannedHours = row[6]?.content || 0; // Planned hours
+          const spentDraft = row[7]?.content || 0;  // Spent hours (Draft)
+          const spentSubmitted = row[8]?.content || 0; // Spent hours (Submitted)
+
+          // Combine into a styled display
+          return `
     <div style="
       text-align: center;
       font-size: 10px;
@@ -1153,21 +1164,21 @@ function renderProjectDataTable(datatableWrapper, projectData) {
       <span style="color: #32CD32;">S: ${spentSubmitted} hrs</span>
     </div>
   `;
-  }
-  
-  
-  function linkFormatter1(value, row) {
-    return `<a href="#" onclick="handleProjectClick('${row[3].content}');">${row[2].content}</a>`;
-  }
-  function linkFormatter(value, row) {
-    return `<a href="#" onclick="handleCustomerClick('${row[5].content}');">${row[5].content}</a>`;
-  }
-  function linkFormatter2(value, row) {
-    return row[9]?.content ? `<a href="#" onclick="handleTimesheetClick('${row[9].content}');">${row[9].content}</a>` : "";
-  }
-  // Add a combined style element to hide the specified columns and headers
-let style = document.createElement("style");
-style.innerHTML = `
+      }
+
+
+      function linkFormatter1(value, row) {
+          return `<a href="#" onclick="handleProjectClick('${row[3].content}');">${row[2].content}</a>`;
+      }
+      function linkFormatter(value, row) {
+          return `<a href="#" onclick="handleCustomerClick('${row[5].content}');">${row[5].content}</a>`;
+      }
+      function linkFormatter2(value, row) {
+          return row[9]?.content ? `<a href="#" onclick="handleTimesheetClick('${row[9].content}');">${row[9].content}</a>` : "";
+      }
+      // Add a combined style element to hide the specified columns and headers
+      let style = document.createElement("style");
+      style.innerHTML = `
 /* Hide the "Name" column cells and header */
 .dt-cell__content--col-10, .dt-cell__content--header-10 { display: none; }
 
@@ -1191,34 +1202,33 @@ style.innerHTML = `
 .dt-cell__content--col-8, .dt-cell__content--header-8 { display: none; }
 
 `;
-document.head.appendChild(style);
+      document.head.appendChild(style);
 
-  // Initialize DataTable with the data and column configuration
-  // 124 remove var
-  datatable = new frappe.DataTable(
-    datatableWrapper,
-    {
-      columns: columns.map((col) => ({ content: col.label, ...col })), // Include the column headers
-      data: projectData,
-      // inlineFilters: true, //124 remove inline filter
-      language: frappe.boot.lang,
-      translations: frappe.utils.datatable.get_translations(),
-      layout: "fixed",
-      cellHeight: 33,
-      direction: frappe.utils.is_rtl() ? "rtl" : "ltr",
-      header: true, // Ensure that column headers are shown
-      width: "100%",
-    }
-  );
+      // Initialize DataTable with the data and column configuration
+      let datatable = new frappe.DataTable(
+          datatableWrapper,
+          {
+              columns: columns.map((col) => ({ content: col.label, ...col })), // Include the column headers
+              data: projectData,
+              inlineFilters: true,
+              language: frappe.boot.lang,
+              translations: frappe.utils.datatable.get_translations(),
+              layout: "fixed",
+              cellHeight: 33,
+              direction: frappe.utils.is_rtl() ? "rtl" : "ltr",
+              header: true, // Ensure that column headers are shown
+              width: "100%",
+          }
+      );
 
-  // Move the table to the center and add margin on top
-  $(datatableWrapper).css({
-    "margin-top": "50px",
-    "text-align": "center",
-    "margin-left": "10px",
-    width: "1220px",
-  });
+      // Move the table to the center and add margin on top
+      $(datatableWrapper).css({
+          "margin-top": "30px",
+          "text-align": "center",
+          "margin-left": "10px",
+          width: "1220px",
+      });
+      // Apply styling to the card wrapper
+  }
 
-  // Apply styling to the card wrapper
-}
 };
