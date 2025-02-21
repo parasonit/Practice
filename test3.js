@@ -17,6 +17,7 @@ frappe.pages["project-action-panel"].on_page_load = function (wrapper) {
         "phamos.phamos.page.project_action_panel.project_action_panel.fetch_projects",
       callback: function (r) {
         if (r.message) {
+            console.log("fetch_projects", r.message)
           // Render DataTable with the fetched data
           renderDataTable(wrapper, r.message);
           //console.log(window.location.href)
@@ -757,13 +758,13 @@ function renderProjectDataTable(datatableWrapper, projectData) {
   
   
   function linkFormatter1(value, row) {
-    return `<a href="#" onclick="handleProjectClick('${row[9].content}');">${row[2].content}</a>`;
+    return `<a href="#" onclick="handleProjectClick('${row[10].content}');">${row[2].content}</a>`;
   }
   function linkFormatter(value, row) {
-    return `<a href="#" onclick="handleCustomerClick('${row[3].content}');">${row[4].content}</a>`;
+    return `<a href="#" onclick="handleCustomerClick('${row[5].content}');">${row[5].content}</a>`;
   }
   function linkFormatter2(value, row) {
-    return row[8]?.content ? `<a href="#" onclick="handleTimesheetClick('${row[8].content}');">${row[8].content}</a>` : "";
+    return row[8]?.content ? `<a href="#" onclick="handleTimesheetClick('${row[9].content}');">${row[9].content}</a>` : "";
   }
   // Add a combined style element to hide the specified columns and headers
 let style = document.createElement("style");
@@ -792,7 +793,8 @@ style.innerHTML = `
 
 `;
 document.head.appendChild(style);
-
+  console.log("projectData", projectData)
+  console.log("columns",  columns.map((col) => ({ content: col.label, ...col })))
   // Initialize DataTable with the data and column configuration
   let datatable = new frappe.DataTable(
     datatableWrapper,
